@@ -6,6 +6,7 @@ export type Line = {
 
 export type Stop = {
     id: string,
+    commonName: string,
     arrivals?: Arrival[]
 }
 

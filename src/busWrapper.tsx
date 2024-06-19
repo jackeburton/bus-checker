@@ -21,16 +21,16 @@ const BusWrapper = () => {
         queryFn: fetchBusLines,
     })
 
-    const [options, setOptions] = useState<ListOption[]>([])
+    const [routes, setRoutes] = useState<ListOption[]>([])
     useEffect(() => {
-        if (data){setOptions(data)}
+        if (data){setRoutes(data)}
     }, [data])
 
-    if (isLoading || !options) return <div>loading values...</div>
+    if (isLoading || !routes) return <div>loading values...</div>
     if (isError) return <div>Error: {error?.message}</div>
 
     const handleSelected = (value:string) => {
-        setOptions(options.map((select) => {
+        setRoutes(routes.map((select) => {
             if (select.value === value){
                 return {...select, selected: !select.selected}
             }
@@ -39,19 +39,19 @@ const BusWrapper = () => {
     }
 
     const reduceSelected = () => {
-        for (let i = 1; i < options.length; i++){
-            if (options[i].selected !== options[i-1].selected){
+        for (let i = 1; i < routes.length; i++){
+            if (routes[i].selected !== routes[i-1].selected){
                 return 'multi'
             }
         }
-        return options[0].selected 
+        return routes[0].selected 
     }
 
     const toggleAll = () => {
         if(reduceSelected() === 'multi' || reduceSelected()){
-            setOptions(options.map((option) => ({...option, selected: false})))
+            setRoutes(routes.map((option) => ({...option, selected: false})))
         } else {
-            setOptions(options.map((option) => ({...option, selected: true})))
+            setRoutes(routes.map((option) => ({...option, selected: true})))
         }
     }
 
@@ -60,12 +60,12 @@ const BusWrapper = () => {
             <MultiSelect 
                 name="Bus Routes"
                 toggleAll={toggleAll} 
-                options={options} 
+                options={routes} 
                 handleSelected={handleSelected} 
                 reduceSelected={reduceSelected} 
             /> 
             
-            {options.filter(line => line.selected === true).map((line) => (
+            {routes.filter(line => line.selected === true).map((line) => (
                 <LineWrapper key={line.value} value={line.value} label={line.label}/>
             ))}
             
