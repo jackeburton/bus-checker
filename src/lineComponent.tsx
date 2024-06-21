@@ -1,8 +1,15 @@
+import MultiSelect from "./multiSelect"
 import { Line } from "./types/busState"
 
-const LineComponent = ({value, label, selected, stops}:Line) => {
+const LineComponent = ({value, label, stops}:Line) => {
     return (
-        
+        <StopMultiSelect
+            name={label}
+            toggleAll={toggleAll} 
+            stops={stops}
+            handleSelected={handleSelected} 
+            reduceSelected={reduceSelected} 
+        />
     )
 } 
 

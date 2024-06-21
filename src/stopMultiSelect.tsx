@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import MultiSelectTopCheckbox from './multiSelectTopCheckbox'
-import { Line } from './types/busState'
+import { Stop } from './types/busState'
 
 type MultiSelectProps = {
     name: string,
-    lines: Line[],
-    handleSelected: (value:string, selectedState: boolean) => void,
+    stops: Stop[],
+    handleSelected: (value:string) => void,
     toggleAll: () => void,
     reduceSelected: () => boolean | 'multi'
 }
 
-const LineMultiSelect = ({name, lines, handleSelected, toggleAll, reduceSelected}: MultiSelectProps) => {
+const LineMultiSelect = ({name, stops, handleSelected, toggleAll, reduceSelected}: MultiSelectProps) => {
 
     const [isHidden, setIsHidden] = useState(true)
 
@@ -23,9 +23,9 @@ const LineMultiSelect = ({name, lines, handleSelected, toggleAll, reduceSelected
                 <li onClick={toggleAll}>
                     <MultiSelectTopCheckbox isAllSelected={reduceSelected()}/>
                 </li>
-                {lines.map((line) => (
-                    <li onClick={() => handleSelected(line.value, line.stops.length !== 0)} key={line.value} >
-                        {line.label} {line.stops.length > 0 ? <span>selected</span> : null} {line.stops.length}
+                {stops.map((stop) => (
+                    <li onClick={() => handleSelected(stop.id)} key={stop.commonName} >
+                        {stop.commonName} {stop.arrivals.length > 0 ? <span>selected</span> : null}
                     </li>
                 ))}
             </ul>
