@@ -2,15 +2,15 @@ import axios from "axios"
 import {Arrival, Line, Stop} from "./types/busState"
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import LineMultiSelect from "./lineMultiSelect"
-import StopMultiSelect from "./stopMultiSelect"
 import StopComponent from "./stopComponent"
+import MultiSelect from "./multiSelect"
+import { LineProps, StopProps } from "./types/multiSelectProps"
 
 const fetchBusLines = async (): Promise<Line[]> => { 
     const response = await axios.get('https://api.tfl.gov.uk/Line/Mode/bus/Route')
     return response.data.map((line: any) => ({
-            value: line.id,
-            label: line.name,
+            id: line.id,
+            name: line.name,
             stops: []
         }))
 }
@@ -22,11 +22,11 @@ const useFetchBusLines = () => {
     })
 }
 
-const fetchRouteStops = async (value: string): Promise<Stop[]> => { 
-    const response = await axios.get(`https://api.tfl.gov.uk/line/${value}/stoppoints`)
+const fetchRouteStops = async (lineId: string): Promise<Stop[]> => {
+    const response = await axios.get(`https://api.tfl.gov.uk/line/${lineId}/stoppoints`)
     return response.data.map((stop: any) => ({
             id: stop.id,
-            commonName: stop.commonName,
+            name: stop.commonName + " " + stop.indicator,
             arrivals: []
         }))
 }
@@ -75,9 +75,9 @@ const BusContainer = () => {
     useEffect(() => {
         if (routeStops && selectedLine.value) {
             setLines(lines.map((line) => {
-                if (selectedLine.value === line.value && selectedLine.selectedState){
+                if (selectedLine.value === line.id && selectedLine.selectedState){
                     return {...line, stops:[]}
-                } else if (selectedLine.value === line.value ) {
+                } else if (selectedLine.value === line.id ) {
                     return {...line, stops:routeStops}
                 }
                 return {...line}
@@ -89,7 +89,7 @@ const BusContainer = () => {
     useEffect(() => {
         if (stopArrivals && selectedStop.value && selectedStopsLine) {
             setLines(lines.map(line => {
-                if (selectedStopsLine === line.value) {
+                if (selectedStopsLine === line.id) {
                     const newStops =  line.stops
                     for (let i = 0; i < newStops.length; i++){
                         if (newStops[i].id === selectedStop.value && selectedStop.selectedState) {
@@ -143,7 +143,7 @@ const BusContainer = () => {
 
     const toggleAllStops = (lineId:string) => {
         setLines(lines.map((line) => {
-            if (line.value === lineId) {
+            if (line.id === lineId) {
                 if(reduceSelectedStops(line.stops) === 'multi' || reduceSelectedStops(line.stops)){
                     const newStops = line.stops
                     for (let i = 0; i < newStops.length; i++) {
@@ -156,48 +156,43 @@ const BusContainer = () => {
         }))
     }
 
-        /*for (let i = 1; i < lines.length; i++){
-            if (lines[i].value === lineId){
-                if(reduceSelectedStops(lines[i].stops) === 'multi' || reduceSelectedStops(lines[i].stops)){
-                    setLines(lines.map((line) => ({...line, stops: []})))
-                }
-            }
-        }*/
-    
+    const lineProps : LineProps = {
+        handleSelected: handleSelected,
+        toggleAll: toggleAll,
+        reduceSelected: reduceSelected,
+        items: lines
+    }
 
     return (
         <div className='border-solid border-2 border-black m-2'>
-            <LineMultiSelect
+            <MultiSelect
                 name="Bus Routes"
-                toggleAll={toggleAll} 
-                lines={lines}
-                handleSelected={handleSelected} 
-                reduceSelected={reduceSelected} 
+                props={lineProps}
             /> 
-            {lines.filter(line => line.stops.length !== 0).map(line => (
-                <div key={line.value} className='border-solid border-2 border-black m-2'>
-                    <StopMultiSelect 
-                        lineId={line.value}
-                        name={line.label} 
-                        stops={line.stops} 
-                        handleSelected={handleSelectedStop}
-                        toggleAll={toggleAllStops} 
-                        reduceSelected={reduceSelectedStops}                    
-                    />
-                    {/*<div key={line.value}>
-                        {line.stops.map(stop=>(
-                            <div key={stop.id}>{stop.commonName}</div>
-                        ))}
-                    </div>*/}
-                    {line.stops.filter(stop => stop.arrivals.length !== 0).map(stop => (
-                        <StopComponent
-                            key={stop.id}
-                            name={stop.commonName}
-                            arrivals={stop.arrivals}
+            {lines.filter(line => line.stops.length !== 0).map(line => {
+                const stopProps : StopProps = {
+                    handleSelected: handleSelectedStop,
+                    toggleAll: toggleAllStops,
+                    reduceSelected: reduceSelectedStops,
+                    items:  line.stops, 
+                    lineId: line.id
+                }
+                return (
+                    <div key={line.id} className='border-solid border-2 border-black m-2'>
+                        <MultiSelect 
+                            name={line.name}  
+                            props={stopProps}                  
                         />
-                    ))}
-                </div>
-            ))}
+                        {line.stops.filter(stop => stop.arrivals.length !== 0).map(stop => (
+                            <StopComponent
+                                key={stop.id}
+                                name={stop.name}
+                                arrivals={stop.arrivals}
+                            />
+                        ))}
+                    </div>
+                )
+            })}
 
         </div>
     )

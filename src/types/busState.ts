@@ -1,12 +1,12 @@
 export type Line = {
-    value: string,
-    label: string,
+    id: string,
+    name: string,
     stops: Stop[]
 }
 
 export type Stop = {
     id: string,
-    commonName: string,
+    name: string,
     arrivals: Arrival[]
 }
 
