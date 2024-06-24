@@ -11,5 +11,6 @@ export type Stop = {
 }
 
 export type Arrival = {
+    id: string
     arrivalTime : string
 }

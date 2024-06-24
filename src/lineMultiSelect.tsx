@@ -17,7 +17,7 @@ const LineMultiSelect = ({name, lines, handleSelected, toggleAll, reduceSelected
     if (isHidden) return <div className='border-solid border-2 border-black rounded-md m-2' onClick={() => setIsHidden(!isHidden)}>{name} <span className='float-right pr-2'>v</span></div>
 
     return (
-        <div className='box-border border-solid border-2 border-black rounded-md m2 relative'>
+        <div className='box-border border-solid border-2 border-black rounded-md m-2'>
             <div onClick={() => setIsHidden(!isHidden)}>{name} <span className='float-right pr-2'>^</span></div>
             <ul className='absolute z-10 bg-white border-2  border-black rounded-md w-full mt-1 left-0'>
                 <li onClick={toggleAll}>
@@ -25,7 +25,7 @@ const LineMultiSelect = ({name, lines, handleSelected, toggleAll, reduceSelected
                 </li>
                 {lines.map((line) => (
                     <li onClick={() => handleSelected(line.value, line.stops.length !== 0)} key={line.value} >
-                        {line.label} {line.stops.length > 0 ? <span>selected</span> : null} {line.stops.length}
+                        {line.label} {line.stops.length > 0 ? <span>selected</span> : null}
                     </li>
                 ))}
             </ul>
