@@ -24,7 +24,8 @@ const useFetchBusLines = () => {
 
 const fetchRouteStops = async (lineId: string): Promise<Stop[]> => {
     const response = await axios.get(`https://api.tfl.gov.uk/line/${lineId}/stoppoints`)
-    return response.data.map((stop: any) => ({
+    return response.data.filter((stop: any) => stop.children.length === 0).map((stop: any) => (
+        {
             id: stop.id,
             name: stop.commonName + " " + stop.indicator,
             arrivals: []
@@ -33,10 +34,20 @@ const fetchRouteStops = async (lineId: string): Promise<Stop[]> => {
 
 const fetchStopArrivals = async (lineId: string, stopId: string): Promise<Arrival[]> => { 
     const response = await axios.get(`https://api.tfl.gov.uk/Line/${lineId}/Arrivals/${stopId}`)
-    return response.data.map((arrival: any) => ({
+    return response.data.map((arrival: any) => {
+        const expectedArrival:Date = new Date(arrival.expectedArrival)
+        const now:Date = new Date();
+        const diffInMilliseconds = expectedArrival.getTime() - now.getTime();
+        return ({
             id: arrival.id,
-            arrivalTime : arrival.timeToStation 
-        }))
+            arrivalTime : Math.floor(diffInMilliseconds / (1000 * 60)) + 
+                ' mins (' +  
+                String(expectedArrival.getHours()).padStart(2, '0') + 
+                ':' + 
+                String(expectedArrival.getMinutes()).padStart(2, '0') + 
+                ')'
+        })
+    })
 }
 
 const BusContainer = () => {
@@ -89,18 +100,21 @@ const BusContainer = () => {
     useEffect(() => {
         if (stopArrivals && selectedStop.value && selectedStopsLine) {
             setLines(lines.map(line => {
-                if (selectedStopsLine === line.id) {
-                    const newStops =  line.stops
+                if (selectedStopsLine !== line.id) {
+                    return {...line}
+                }
+                const newStops = line.stops
                     for (let i = 0; i < newStops.length; i++){
                         if (newStops[i].id === selectedStop.value && selectedStop.selectedState) {
                             newStops[i].arrivals = []
                         } else if (newStops[i].id === selectedStop.value) {
-                            newStops[i].arrivals = stopArrivals
+                            newStops[i].arrivals = stopArrivals.sort((a, b) => 
+                                (Number(a.arrivalTime.split(" ")[0]) - Number(b.arrivalTime.split(" ")[0]))
+                            )
                         }
                     }
                     return {...line, stops: newStops}
-                }
-                return {...line}
+                
             }))
         }
     }, [stopArrivals, selectedStop, selectedStopsLine])
@@ -164,7 +178,7 @@ const BusContainer = () => {
     }
 
     return (
-        <div className='border-solid border-2 border-black m-2'>
+        <div className='border-solid border-2 border-black m-2 w-80 mr-auto ml-auto'>
             <MultiSelect
                 name="Bus Routes"
                 props={lineProps}

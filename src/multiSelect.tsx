@@ -52,6 +52,7 @@ const MultiSelect = ({name, props}: MultiSelectProps) => {
             <ul className='absolute z-10 bg-white border-2  border-black rounded-md w-full mt-1 left-0'>
                 <li>
                     <input className='border-2  border-black' 
+                        autoFocus
                         value={searchText}
                         onChange={text => setSearchText(text.target.value)}
                     />
@@ -60,8 +61,8 @@ const MultiSelect = ({name, props}: MultiSelectProps) => {
                     <MultiSelectTopCheckbox isAllSelected={reduce()}/>
                 </li>
                 {props.items.filter(item => item.name.toLowerCase().includes(searchText.toLowerCase())).map((item) => (
-                    <li onClick={() => handleMultiSelect(item)} key={item.id} >
-                        <TickBox selected = {handleTickBoxSelect(item)}/> {item.name} 
+                    <li onClick={() => handleMultiSelect(item)} key={item.id} className='cursor-pointer'>
+                        <TickBox selected = {handleTickBoxSelect(item)}/> {item.name}
                     </li>
                 )
                 
