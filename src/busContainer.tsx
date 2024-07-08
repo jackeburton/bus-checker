@@ -68,7 +68,7 @@ const BusContainer = () => {
     const [selectedLine, setSelectedLine] = useState({value: '', selectedState: false})
 
     useEffect(() => {
-        if (storedState){
+        if (storedState && storedState !== '[]'){
             setLines(JSON.parse(storedState))
         } else {
         if (busLines){
