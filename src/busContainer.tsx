@@ -51,6 +51,7 @@ const fetchStopArrivals = async (lineId: string, stopId: string): Promise<Arriva
 }
 
 const BusContainer = () => {
+    const storedState = localStorage.getItem("storedData")
     const {isLoading, isError, data:busLines, error} = useFetchBusLines()
     const {data:routeStops, refetch:refetchRouteStops} = useQuery({
         queryKey: ['fetchRouteStops'],
@@ -59,29 +60,37 @@ const BusContainer = () => {
     })
     const {data:stopArrivals, refetch:refetchStopArrivals} = useQuery({
         queryKey: ['fetchStopArrivals'],
-        queryFn: () => fetchStopArrivals(selectedStopsLine, selectedStop.value),
+        queryFn: () => fetchStopArrivals(selectedStop.lineId, selectedStop.value),
         enabled: false,
     })
     const [lines, setLines] = useState<Line[]>([])
-    const [selectedStop, setSelectedStop] = useState({value: '', selectedState: false})
-    const [selectedStopsLine, setSelectedStopsLine] = useState('')
+    const [selectedStop, setSelectedStop] = useState({value: '', selectedState: false, lineId: ''})
     const [selectedLine, setSelectedLine] = useState({value: '', selectedState: false})
 
     useEffect(() => {
-        if (busLines){setLines(busLines)}
+        if (storedState){
+            setLines(JSON.parse(storedState))
+        } else {
+        if (busLines){
+            setLines(busLines)
+        }}
     }, [busLines])
+
+    useEffect(() => {
+        localStorage.setItem("storedData", JSON.stringify(lines));
+    }, [lines])
 
     useEffect(() => {
         if (!selectedLine.selectedState && selectedLine.value) {
             refetchRouteStops()
         }
-    }, [selectedLine, refetchRouteStops]);
+    }, [selectedLine]);
 
     useEffect(() => {
-        if (!selectedStop.selectedState && selectedStop.value && selectedStopsLine) {
+        if (!selectedStop.selectedState && selectedStop.value && selectedStop.lineId) {
             refetchStopArrivals()
         }
-    }, [selectedStop, selectedStopsLine ,refetchStopArrivals])
+    }, [selectedStop])
 
     useEffect(() => {
         if (routeStops && selectedLine.value) {
@@ -98,26 +107,25 @@ const BusContainer = () => {
     }, [routeStops, selectedLine])
 
     useEffect(() => {
-        if (stopArrivals && selectedStop.value && selectedStopsLine) {
+        if (stopArrivals && selectedStop.value && selectedStop.lineId) {
             setLines(lines.map(line => {
-                if (selectedStopsLine !== line.id) {
-                    return {...line}
-                }
-                const newStops = line.stops
-                    for (let i = 0; i < newStops.length; i++){
-                        if (newStops[i].id === selectedStop.value && selectedStop.selectedState) {
-                            newStops[i].arrivals = []
-                        } else if (newStops[i].id === selectedStop.value) {
-                            newStops[i].arrivals = stopArrivals.sort((a, b) => 
-                                (Number(a.arrivalTime.split(" ")[0]) - Number(b.arrivalTime.split(" ")[0]))
-                            )
-                        }
-                    }
+                if (selectedStop.lineId === line.id) {
+                    const newStops = line.stops.map(stop => {
+                        if (stop.id === selectedStop.value && !selectedStop.selectedState) {
+                            return {...stop, arrivals: stopArrivals.sort((a, b) => 
+                                (Number(a.arrivalTime.split(" ")[0]) - Number(b.arrivalTime.split(" ")[0])))}
+                        }else if (stop.id === selectedStop.value && selectedStop.selectedState) {
+                            return {...stop, arrivals: []}
+                        } else {
+                            return {...stop}
+                        } 
+                    })
                     return {...line, stops: newStops}
-                
+                }
+                return {...line}
             }))
         }
-    }, [stopArrivals, selectedStop, selectedStopsLine])
+    }, [stopArrivals, selectedStop])
 
     if (isLoading || !lines) return <div>loading values...</div>
     if (isError) return <div>Error: {error?.message}</div>
@@ -127,8 +135,7 @@ const BusContainer = () => {
     }
 
     const handleSelectedStop = (lineId:string, stopId:string, stopState: boolean) => {
-        setSelectedStop({value: stopId, selectedState: stopState})
-        setSelectedStopsLine(lineId)
+        setSelectedStop({value: stopId, selectedState: stopState, lineId: lineId})
     }
 
     const reduceSelected = () => {
@@ -178,7 +185,7 @@ const BusContainer = () => {
     }
 
     return (
-        <div className='border-solid border-2 border-black m-2 w-80 mr-auto ml-auto'>
+        <div className='border-solid border-2 border-black m-2 w-80 mr-auto ml-auto shadow-lg bg-neu-goldenrod'>
             <MultiSelect
                 name="Bus Routes"
                 props={lineProps}
@@ -192,18 +199,19 @@ const BusContainer = () => {
                     lineId: line.id
                 }
                 return (
-                    <div key={line.id} className='border-solid border-2 border-black m-2'>
+                    <div key={line.id} className='border-solid border-2 border-black m-2 bg-neu-cool-blue'>
                         <MultiSelect 
                             name={line.name}  
                             props={stopProps}                  
                         />
-                        {line.stops.filter(stop => stop.arrivals.length !== 0).map(stop => (
-                            <StopComponent
-                                key={stop.id}
-                                name={stop.name}
-                                arrivals={stop.arrivals}
-                            />
-                        ))}
+                        {line.stops.filter(stop => stop.arrivals.length !== 0).map(stop => {
+
+                            return (<StopComponent
+                                    key={stop.id}
+                                    name={stop.name}
+                                    arrivals={stop.arrivals}
+                                />)
+                        })}
                     </div>
                 )
             })}

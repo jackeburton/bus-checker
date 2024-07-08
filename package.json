@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@designbycode/tailwindcss-text-stroke": "^1.2.1",
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
+    "@tabler/icons-react": "^3.9.0",
     "@tanstack/react-query": "^5.45.0",
     "axios": "^1.7.2",
     "react": "^18.2.0",

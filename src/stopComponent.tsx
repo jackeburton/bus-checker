@@ -10,7 +10,7 @@ const StopComponent = ({name, arrivals}:StopProps) => {
     if (arrivals.length === 0) return <div>loading values...</div>
     return (
         <div>
-            {name} :          
+            <span className="text-neu-candy-floss text-stroke">{name}</span>           
             {arrivals.map(arrival => (
                 <ArrivalComponent key={arrival.id} arrivalTime={arrival.arrivalTime}/>
             ))
