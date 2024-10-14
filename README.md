@@ -3,7 +3,7 @@ https://d14c0u19cdl948.cloudfront.net/
 
 # Bus-checker
 
-A front end react implementation querying the TFL api to check the next busses of a certain line to arrive at a certain stop
+A frontend react implementation querying the TFL api to check the next busses of a certain line to arrive at a certain stop
 
 Technologies:
  - Typescript
